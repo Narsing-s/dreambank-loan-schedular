@@ -35,8 +35,7 @@ The project prevents duplicate loan offers by validating existing active offers 
 - <img width="1871" height="830" alt="image" src="https://github.com/user-attachments/assets/6054d502-a005-46a8-b86f-34a47bce6963" />
 
 - 📜 Maintains email history in the `EMAIL_HISTORY` table
-- ![Uploading image.png…]()
-
+- <img width="1702" height="271" alt="image" src="https://github.com/user-attachments/assets/6c8daa3a-4902-4c51-b9e7-a75c6d7fa9c0" />
 - 📊 Detailed logging for monitoring and troubleshooting
 
 ---
