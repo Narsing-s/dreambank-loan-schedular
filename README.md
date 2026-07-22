@@ -11,14 +11,32 @@ The project prevents duplicate loan offers by validating existing active offers 
 ## Features
 
 - ⏰ Automated scheduler for loan offer generation
+- <img width="2523" height="489" alt="dreambank-loan-scheduler-ss" src="https://github.com/user-attachments/assets/25e61e73-89cd-45e9-b13b-8c2cc4338529" />
+
 - 👤 Retrieves active customer records from Snowflake
+- <img width="1800" height="210" alt="image" src="https://github.com/user-attachments/assets/faf4d00f-706c-48c3-a320-ca1e184b4ca3" />
+
 - 💰 Determines loan eligibility based on account balance
+- <img width="1752" height="157" alt="image" src="https://github.com/user-attachments/assets/9e4b38b3-f00d-4d00-bd5d-10859bbcd911" />
+
 - 🏠 Supports Home Loan, Car Loan, and Personal Loan offers
+- <img width="1746" height="215" alt="image" src="https://github.com/user-attachments/assets/4cfca54e-aca3-4c37-9163-a83be05a4abe" />
+
 - 🆔 Generates unique loan offer IDs
+- <img width="657" height="77" alt="image" src="https://github.com/user-attachments/assets/3b0e8571-016f-4fab-9dce-f4eb72203a4f" />
+
 - 💾 Stores loan offers in the `LOAN_OFFERS` table
+- <img width="1737" height="197" alt="image" src="https://github.com/user-attachments/assets/6f12d1db-fe0e-4913-9138-7a0b26a73360" />
+
 - 🚫 Prevents duplicate active loan offers
+- <img width="961" height="112" alt="image" src="https://github.com/user-attachments/assets/0e6262d1-9425-47e9-b0cb-81a2e17782f2" />
+
 - 📧 Sends personalized HTML email notifications
+- <img width="1871" height="830" alt="image" src="https://github.com/user-attachments/assets/6054d502-a005-46a8-b86f-34a47bce6963" />
+
 - 📜 Maintains email history in the `EMAIL_HISTORY` table
+- ![Uploading image.png…]()
+
 - 📊 Detailed logging for monitoring and troubleshooting
 
 ---
