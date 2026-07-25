@@ -94,13 +94,16 @@ The project prevents duplicate loan offers by validating existing active offers 
 - Secure Snowflake integration
 - Scalable MuleSoft architecture
 
+## SMS and WHatsapp Notification
+<img width="777" height="382" alt="image" src="https://github.com/user-attachments/assets/5b18b18a-85ee-4b5a-9900-7f42b8664532" />
+
+- REST API to view loan offers
+- <img width="1577" height="1003" alt="image" src="https://github.com/user-attachments/assets/b8d10670-c830-45b0-9f6d-e87928650fd0" />
+
+
 ---
 
 ## Future Enhancements
-
-- SMS and WhatsApp notifications
-- REST API to view loan offers
-- PDF loan offer generation
 - Dashboard and reporting
 - Multi-channel customer notifications
 - API security using OAuth 2.0
