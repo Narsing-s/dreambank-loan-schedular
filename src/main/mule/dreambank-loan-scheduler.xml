@@ -1,21 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:sns="http://www.mulesoft.org/schema/mule/sns" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sns http://www.mulesoft.org/schema/mule/sns/current/mule-sns.xsd">
 	<snowflake:snowflake-config name="Snowflake_Config" doc:name="Snowflake Config" doc:id="4a45fadd-ee32-498a-99e5-6d2f7c299c54" >
-		<snowflake:snowflake-connection accountName="TICPWBD-IC44792" warehouse="COMPUTE_WH" database="MYDATABASE" schema="PUBLIC" user="MYDB" password="Mydb@123456789" role="ACCOUNTADMIN" />
+		<snowflake:snowflake-connection accountName="${db.sf.name}" warehouse="${db.sf.warehouse}" database="${db.sf.database}" schema="${db.sf.schema}" user="${db.sf.user}" password="${db.sf.password}" role="${db.sf.role}" />
 	</snowflake:snowflake-config>
 	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="b2a244bc-0d32-4ac8-ae06-7965be0306b1" >
-		<email:smtp-connection host="smtp.gmail.com" port="587" user="narsingbeesetti06@gmail.com" password="ajfq nryi lwjh zhev" >
+		<email:smtp-connection host="${email.host}" port="${email.port}" user="${email.username}" password="${email.password}" >
 			<email:properties >
-				<email:property key="mail.smtp.starttls.enable" value="true" />
+				<email:property key="${email.key}" value="${email.value}" />
 			</email:properties>
 		</email:smtp-connection>
 	</email:smtp-config>
+	<sns:config name="Amazon_SNS_configuration" doc:name="Amazon SNS configuration" doc:id="65e2b02b-d788-475d-b7e8-27e1e0fb2b71" >
+		<sns:basic-connection accessKey="${aws.accesskey}" secretKey="${aws.secretkey}" region="${aws.region}"/>
+	</sns:config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="64303621-9dd8-42d5-94ca-8b813a8d69bc" >
+		<http:request-connection host="${http.requester.host}" />
+	</http:request-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="d0e5d926-43e1-4969-b8dd-d1396bc2ea2e" file="config\local-config.yaml" />
 	<flow name="loan_schedulerFlow" doc:id="545a075f-4f41-47e1-86bb-f69e0d934bbb" >
 		<scheduler doc:name="Scheduler" doc:id="11b2d4c1-3e33-4ca4-b194-3978926dc842" >
 			<scheduling-strategy >
@@ -23,17 +32,18 @@ http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/em
 			</scheduling-strategy>
 		</scheduler>
 		<logger level="INFO" doc:name="Batch job is started" doc:id="d6cf4110-3571-41bf-8381-933f9ed039a2" message="-----------------------------------Monthly statement API started----------------------------------------" />
-		<snowflake:select doc:id="357da872-bf6e-414a-a9a1-557c03ee1358" config-ref="Snowflake_Config" doc:name="verify account">
+		<logger level="INFO" doc:name="Beforecustomer database when the user is existed or not" doc:id="a28d402c-baf3-461d-9ae0-a6c6b7092726" message="==============Before customer database when the user is existed or not======" />
+		<snowflake:select doc:id="357da872-bf6e-414a-a9a1-557c03ee1358" config-ref="Snowflake_Config" doc:name="retrive active customers data">
 			<snowflake:sql ><![CDATA[SELECT *
 FROM BANK_CUSTOMER_DATA
 WHERE STATUS='ACTIVE';]]></snowflake:sql>
 		</snowflake:select>
-		<logger level="INFO" doc:name="AFter database" doc:id="7df0dd72-b82c-481e-80e1-61d16f6e6787" message="#[payload]"/>
+		<logger level="INFO" doc:name="After customer database when the user is existed or not" doc:id="7df0dd72-b82c-481e-80e1-61d16f6e6787" message="==============After customer database when the user is existed or not======"/>
 		<foreach doc:name="For Each" doc:id="5e384358-73ac-4261-bb8f-8daa393e3e03" >
 			<set-variable value="#[payload]" doc:name="customer" doc:id="ee975f58-80cc-4680-8f0f-209acf4bc2d7" variableName="customer" />
 			<set-variable value='#[%dw 2.0&#10;output application/java&#10;&#10;var bal = (vars.customer.BALANCE default 0) as Number&#10;&#10;---&#10;if (bal &gt;= 500000)&#10;    "HOME LOAN"&#10;else if (bal &gt;= 200000)&#10;    "CAR LOAN"&#10;else&#10;    "PERSONAL LOAN"]' doc:name="loanType" doc:id="81fb0f6b-4db4-4755-9e69-8f6472ba34d7" variableName="loanType"/>
-			<logger level="INFO" doc:name="Logger" doc:id="b1aed40d-4ed2-4083-977a-70c02b788a31" message="#['Customer = ' ++ write(vars.customer,'application/json')]"/>
-			<snowflake:select doc:name="Select" doc:id="ed5709eb-a23a-45da-bf5a-df941f3aad74" config-ref="Snowflake_Config">
+			<logger level="INFO" doc:name="transform the array object to json of object" doc:id="b1aed40d-4ed2-4083-977a-70c02b788a31" message="#['Customer = ' ++ write(vars.customer,'application/json')]"/>
+			<snowflake:select doc:name="verify is there any offer exist for the user" doc:id="ed5709eb-a23a-45da-bf5a-df941f3aad74" config-ref="Snowflake_Config">
 				<snowflake:sql><![CDATA[SELECT *
 FROM LOAN_OFFERS
 WHERE ACCOUNTNUMBER = :accountNumber
@@ -44,12 +54,12 @@ AND STATUS = 'ACTIVE';]]></snowflake:sql>
 	"loanType": vars.loanType
 }]]]></snowflake:input-parameters>
 			</snowflake:select>
-			<set-variable value="#[payload.OFFER_ID[0]]" doc:name="offerid" doc:id="c0d88367-b73c-407d-af85-918eec571c75" variableName="offerid"/>
-			<choice doc:name="Choice" doc:id="e6a192de-05e9-46cf-8c03-b9c014046e46" >
-				<when expression="#[sizeOf(payload) == 0 and payload.OFFER_ID[0] == vars.offerid]">
-					<ee:transform doc:name="generate ofers based on the user amount" doc:id="35df9631-360c-4f0e-81db-e9a80f4d5899">
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
+			<set-variable value="#[payload.OFFER_ID[0]]" doc:name="offerid" doc:id="c0d88367-b73c-407d-af85-918eec571c75" variableName="offerid" />
+			<choice doc:name="Choice" doc:id="f6958f66-b50d-47be-86f7-2bf17e0167db">
+			<when expression="#[sizeOf(payload) == 0 and payload.OFFER_ID[0] == vars.offerid]">
+				<ee:transform doc:name="generate ofers based on the user amount" doc:id="37843ba0-b627-4646-9b0c-c7d97cedcfc9">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/java
 
 var bal = (vars.customer.BALANCE default 0) as Number
@@ -87,11 +97,11 @@ var loan =
     mobile: vars.customer.MOBILENUMBER,
     balance: bal
 } ++ loan]]></ee:set-payload>
-				</ee:message>
-			</ee:transform>
-					<set-variable value="#[payload]" doc:name="loanOffer" doc:id="88dfbb2d-1c10-4761-8802-65cdb57edcd0" variableName="loanOffer"/>
-					<snowflake:insert doc:name="Insert" doc:id="07d84366-0de6-4e69-9e7f-332809667e59" config-ref="Snowflake_Config">
-						<snowflake:sql ><![CDATA[INSERT INTO LOAN_OFFERS
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[payload]" doc:name="loanOffer" doc:id="84f18f14-4c9d-4e64-a678-1fe8fc4fa367" variableName="loanOffer" />
+				<snowflake:insert doc:name="Insert offer detailes into the database" doc:id="0ad48a02-cbb7-4c05-a4d3-d146c2970ee2" config-ref="Snowflake_Config">
+					<snowflake:sql><![CDATA[INSERT INTO LOAN_OFFERS
 (
     OFFER_ID,
     ACCOUNTNUMBER,
@@ -117,7 +127,7 @@ VALUES
     CURRENT_TIMESTAMP(),
     DATEADD(MONTH, 1, CURRENT_TIMESTAMP())
 );]]></snowflake:sql>
-						<snowflake:input-parameters ><![CDATA[#[{
+					<snowflake:input-parameters><![CDATA[#[{
     offerId: payload.offerId,
     accountNumber: payload.accountNumber,
     customerId: payload.customerId,
@@ -126,22 +136,99 @@ VALUES
     interestRate: payload.interestRate,
     tenure: payload.tenure
 }]]]></snowflake:input-parameters>
-					</snowflake:insert>
-					<set-variable value="#[payload]" doc:name="output" doc:id="69757e6d-71bc-4751-8217-65d376fce7f1" variableName="output"/>
-					<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;var customerName = (vars.customer.FULLNAME default &quot;Customer&quot;) as String&#10;var loanType = (vars.loanOffer.loanType default &quot;-&quot;) as String&#10;var offerAmount = (vars.loanOffer.offerAmount default 0) as String&#10;var interestRate = (vars.loanOffer.interestRate default 0) as String&#10;var tenure = (vars.loanOffer.tenure default 0) as String&#10;var accountNumber = (vars.loanOffer.accountNumber default &quot;&quot;) as String&#10;&#10;var maskedAccount =&#10;    if (sizeOf(accountNumber) &gt;= 4)&#10;        &quot;XXXXXX&quot; ++ accountNumber[(sizeOf(accountNumber)-4) to (sizeOf(accountNumber)-1)]&#10;    else&#10;        &quot;XXXXXX0000&quot;&#10;&#10;---&#10;&quot;&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;meta charset='UTF-8'&gt;&#10;&lt;meta name='viewport' content='width=device-width, initial-scale=1.0'&gt;&#10;&#10;&lt;style&gt;&#10;&#10;body{&#10;margin:0;&#10;padding:30px;&#10;background:#eef3f8;&#10;font-family:Segoe UI,Arial,sans-serif;&#10;}&#10;&#10;.wrapper{&#10;max-width:700px;&#10;margin:auto;&#10;background:#ffffff;&#10;border-radius:18px;&#10;overflow:hidden;&#10;box-shadow:0 12px 35px rgba(0,0,0,.12);&#10;}&#10;&#10;.header{&#10;background:linear-gradient(135deg,#003366,#0059b3,#0099ff);&#10;padding:40px;&#10;text-align:center;&#10;color:white;&#10;}&#10;&#10;.header h1{&#10;margin:0;&#10;font-size:34px;&#10;}&#10;&#10;.header p{&#10;margin-top:10px;&#10;font-size:16px;&#10;opacity:.95;&#10;}&#10;&#10;.content{&#10;padding:40px;&#10;}&#10;&#10;.greeting{&#10;font-size:20px;&#10;font-weight:bold;&#10;color:#003366;&#10;}&#10;&#10;.message{&#10;font-size:16px;&#10;line-height:28px;&#10;color:#555;&#10;margin-top:20px;&#10;}&#10;&#10;.offer{&#10;margin-top:30px;&#10;border-radius:12px;&#10;background:#f8fbff;&#10;border:1px solid #d7e8ff;&#10;padding:25px;&#10;}&#10;&#10;.offer table{&#10;width:100%;&#10;border-collapse:collapse;&#10;}&#10;&#10;.offer td{&#10;padding:15px;&#10;font-size:16px;&#10;border-bottom:1px solid #dde7f3;&#10;}&#10;&#10;.offer td:first-child{&#10;font-weight:bold;&#10;color:#003366;&#10;width:45%;&#10;}&#10;&#10;.amount{&#10;font-size:30px;&#10;font-weight:bold;&#10;color:#008000;&#10;}&#10;&#10;.button{&#10;margin-top:35px;&#10;text-align:center;&#10;}&#10;&#10;.button a{&#10;background:#0066ff;&#10;color:white;&#10;padding:16px 40px;&#10;border-radius:40px;&#10;text-decoration:none;&#10;font-size:18px;&#10;font-weight:bold;&#10;display:inline-block;&#10;}&#10;&#10;.note{&#10;margin-top:30px;&#10;padding:18px;&#10;background:#fff9e8;&#10;border-left:5px solid #ffc107;&#10;border-radius:8px;&#10;font-size:15px;&#10;line-height:24px;&#10;color:#555;&#10;}&#10;&#10;.footer{&#10;margin-top:35px;&#10;padding:25px;&#10;background:#003366;&#10;color:white;&#10;text-align:center;&#10;font-size:14px;&#10;}&#10;&#10;.footer h3{&#10;margin:0;&#10;font-size:22px;&#10;}&#10;&#10;.footer p{&#10;margin:10px 0;&#10;}&#10;&#10;&lt;/style&gt;&#10;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='wrapper'&gt;&#10;&#10;&lt;div class='header'&gt;&#10;&#10;&lt;h1&gt;🏦 Dream Bank&lt;/h1&gt;&#10;&#10;&lt;p&gt;Exclusive Pre-Approved Loan Offer&lt;/p&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='content'&gt;&#10;&#10;&lt;div class='greeting'&gt;&#10;&#10;Dear &quot; ++ customerName ++ &quot;,&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='message'&gt;&#10;&#10;Congratulations!&#10;&#10;Based on your excellent banking relationship and account activity,&#10;you have been selected for a &lt;b&gt;Pre-Approved Loan Offer&lt;/b&gt;.&#10;&#10;No additional documentation is required for initial eligibility.&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='offer'&gt;&#10;&#10;&lt;table&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Loan Type&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ loanType ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Eligible Amount&lt;/td&gt;&#10;&lt;td class='amount'&gt;₹ &quot; ++ offerAmount ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Interest Rate&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ interestRate ++ &quot;% p.a.&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Repayment Tenure&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ tenure ++ &quot; Months&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;    &lt;td&gt;Account Number&lt;/td&gt;&#10;    &lt;td&gt;&quot; ++ maskedAccount ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;/table&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='button'&gt;&#10;&#10;&lt;a href='https://dreambank.com'&gt;Accept Offer&lt;/a&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='note'&gt;&#10;&#10;&lt;b&gt;Important&lt;/b&gt;&lt;br&gt;&#10;&#10;• Offer is valid for 30 days.&lt;br&gt;&#10;• Interest rate may vary after expiry.&lt;br&gt;&#10;• Terms &amp; Conditions apply.&lt;br&gt;&#10;• This offer is generated automatically based on your banking profile.&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='footer'&gt;&#10;&#10;&lt;h3&gt;Dream Bank&lt;/h3&gt;&#10;&#10;&lt;p&gt;Your Trusted Banking Partner&lt;/p&gt;&#10;&#10;&lt;p&gt;&#10;Customer Care : 9494207062&lt;br&gt;&#10;support.realbank@gmail.com&#10;&lt;/p&gt;&#10;&#10;&lt;p&gt;&#10;&#10;© 2026 Dream Bank. All Rights Reserved.&#10;&#10;&lt;/p&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&#10;&lt;/html&gt;&quot;]" doc:name="emailbody" doc:id="72aa0d3e-9216-466b-af2b-71d01f25981e" variableName="emailbody"/>
-					<logger level="INFO" doc:name="write payload from array to json" doc:id="366b6eaa-2d28-42a1-9a8c-6b41996322e7" message='#[write(payload,"application/json")]'/>
-					<email:send doc:name="email send to the respective user" doc:id="958b47f4-aea0-42ec-a95a-e22281a33b13" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["🏦 Dream Bank | Congratulations! Your Pre-Approved Loan Offer is Ready - " ++ (vars.customer.BANKNAME default "Dream Bank")]'>
-				<email:to-addresses>
-					<email:to-address value="narsingbeesetti22@gmail.com" />
-							<email:to-address value="#[vars.customer.EMAIL]" />
-				</email:to-addresses>
-						<email:body contentType="text/html" encoding="UTF-8">
-							<email:content><![CDATA[#[vars.emailbody]]]></email:content>
-						</email:body>
-			</email:send>
-					<ee:transform doc:name="email mapping" doc:id="8191d935-5cbe-47e6-8077-5691866773e8">
-						<ee:message>
-							<ee:set-payload><![CDATA[%dw 2.0
+				</snowflake:insert>
+				<set-variable value="#[payload]" doc:name="output" doc:id="a56af15a-d6f0-4e32-828d-3fe3aeda5c9f" variableName="output" />
+				<scatter-gather doc:name="Scatter-Gather" doc:id="20689d9b-d1c0-47c9-8a78-d7b42af36d22">
+					<route>
+						<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;var customerName = (vars.customer.FULLNAME default &quot;Customer&quot;) as String&#10;var loanType = (vars.loanOffer.loanType default &quot;-&quot;) as String&#10;var offerAmount = (vars.loanOffer.offerAmount default 0) as String&#10;var interestRate = (vars.loanOffer.interestRate default 0) as String&#10;var tenure = (vars.loanOffer.tenure default 0) as String&#10;var accountNumber = (vars.loanOffer.accountNumber default &quot;&quot;) as String&#10;&#10;var maskedAccount =&#10;    if (sizeOf(accountNumber) &gt;= 4)&#10;        &quot;XXXXXX&quot; ++ accountNumber[(sizeOf(accountNumber)-4) to (sizeOf(accountNumber)-1)]&#10;    else&#10;        &quot;XXXXXX0000&quot;&#10;&#10;---&#10;&quot;&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;meta charset='UTF-8'&gt;&#10;&lt;meta name='viewport' content='width=device-width, initial-scale=1.0'&gt;&#10;&#10;&lt;style&gt;&#10;&#10;body{&#10;margin:0;&#10;padding:30px;&#10;background:#eef3f8;&#10;font-family:Segoe UI,Arial,sans-serif;&#10;}&#10;&#10;.wrapper{&#10;max-width:700px;&#10;margin:auto;&#10;background:#ffffff;&#10;border-radius:18px;&#10;overflow:hidden;&#10;box-shadow:0 12px 35px rgba(0,0,0,.12);&#10;}&#10;&#10;.header{&#10;background:linear-gradient(135deg,#003366,#0059b3,#0099ff);&#10;padding:40px;&#10;text-align:center;&#10;color:white;&#10;}&#10;&#10;.header h1{&#10;margin:0;&#10;font-size:34px;&#10;}&#10;&#10;.header p{&#10;margin-top:10px;&#10;font-size:16px;&#10;opacity:.95;&#10;}&#10;&#10;.content{&#10;padding:40px;&#10;}&#10;&#10;.greeting{&#10;font-size:20px;&#10;font-weight:bold;&#10;color:#003366;&#10;}&#10;&#10;.message{&#10;font-size:16px;&#10;line-height:28px;&#10;color:#555;&#10;margin-top:20px;&#10;}&#10;&#10;.offer{&#10;margin-top:30px;&#10;border-radius:12px;&#10;background:#f8fbff;&#10;border:1px solid #d7e8ff;&#10;padding:25px;&#10;}&#10;&#10;.offer table{&#10;width:100%;&#10;border-collapse:collapse;&#10;}&#10;&#10;.offer td{&#10;padding:15px;&#10;font-size:16px;&#10;border-bottom:1px solid #dde7f3;&#10;}&#10;&#10;.offer td:first-child{&#10;font-weight:bold;&#10;color:#003366;&#10;width:45%;&#10;}&#10;&#10;.amount{&#10;font-size:30px;&#10;font-weight:bold;&#10;color:#008000;&#10;}&#10;&#10;.button{&#10;margin-top:35px;&#10;text-align:center;&#10;}&#10;&#10;.button a{&#10;background:#0066ff;&#10;color:white;&#10;padding:16px 40px;&#10;border-radius:40px;&#10;text-decoration:none;&#10;font-size:18px;&#10;font-weight:bold;&#10;display:inline-block;&#10;}&#10;&#10;.note{&#10;margin-top:30px;&#10;padding:18px;&#10;background:#fff9e8;&#10;border-left:5px solid #ffc107;&#10;border-radius:8px;&#10;font-size:15px;&#10;line-height:24px;&#10;color:#555;&#10;}&#10;&#10;.footer{&#10;margin-top:35px;&#10;padding:25px;&#10;background:#003366;&#10;color:white;&#10;text-align:center;&#10;font-size:14px;&#10;}&#10;&#10;.footer h3{&#10;margin:0;&#10;font-size:22px;&#10;}&#10;&#10;.footer p{&#10;margin:10px 0;&#10;}&#10;&#10;&lt;/style&gt;&#10;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='wrapper'&gt;&#10;&#10;&lt;div class='header'&gt;&#10;&#10;&lt;h1&gt;🏦 Dream Bank&lt;/h1&gt;&#10;&#10;&lt;p&gt;Exclusive Pre-Approved Loan Offer&lt;/p&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='content'&gt;&#10;&#10;&lt;div class='greeting'&gt;&#10;&#10;Dear &quot; ++ customerName ++ &quot;,&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='message'&gt;&#10;&#10;Congratulations!&#10;&#10;Based on your excellent banking relationship and account activity,&#10;you have been selected for a &lt;b&gt;Pre-Approved Loan Offer&lt;/b&gt;.&#10;&#10;No additional documentation is required for initial eligibility.&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='offer'&gt;&#10;&#10;&lt;table&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Loan Type&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ loanType ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Eligible Amount&lt;/td&gt;&#10;&lt;td class='amount'&gt;₹ &quot; ++ offerAmount ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Interest Rate&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ interestRate ++ &quot;% p.a.&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Repayment Tenure&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ tenure ++ &quot; Months&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;    &lt;td&gt;Account Number&lt;/td&gt;&#10;    &lt;td&gt;&quot; ++ maskedAccount ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;/table&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='button'&gt;&#10;&#10;&lt;a href='https://narsing-s.github.io/dreambank-loan-offer-support-app/'&gt;Accept Offer&lt;/a&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='note'&gt;&#10;&#10;&lt;b&gt;Important&lt;/b&gt;&lt;br&gt;&#10;&#10;• Offer is valid for 30 days.&lt;br&gt;&#10;• Interest rate may vary after expiry.&lt;br&gt;&#10;• Terms &amp; Conditions apply.&lt;br&gt;&#10;• This offer is generated automatically based on your banking profile.&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='footer'&gt;&#10;&#10;&lt;h3&gt;Dream Bank&lt;/h3&gt;&#10;&#10;&lt;p&gt;Your Trusted Banking Partner&lt;/p&gt;&#10;&#10;&lt;p&gt;&#10;Customer Care : 9494207062&lt;br&gt;&#10;support.realbank@gmail.com&#10;&lt;/p&gt;&#10;&#10;&lt;p&gt;&#10;&#10;© 2026 Dream Bank. All Rights Reserved.&#10;&#10;&lt;/p&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&#10;&lt;/html&gt;&quot;]" doc:name="emailbody" doc:id="b9302753-417b-473e-bd64-ddbb23802d3b" variableName="emailbody" />
+						<logger level="INFO" doc:name="write payload from array to json" doc:id="c5036ce8-f029-4a89-801b-6038632a1bed" message='#[write(payload,"application/json")]' />
+						<email:send doc:name="email send to the respective user" doc:id="66ce592e-4f70-492f-ba60-6565e61fce33" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["🏦 Dream Bank | Congratulations! Your Pre-Approved Loan Offer is Ready - " ++ (vars.customer.BANKNAME default "Dream Bank")]'>
+							<email:to-addresses>
+								<email:to-address value="narsingbeesetti22@gmail.com" />
+								<email:to-address value="#[vars.customer.EMAIL]" />
+							</email:to-addresses>
+							<email:body contentType="text/html" encoding="UTF-8">
+								<email:content><![CDATA[#[vars.emailbody]]]></email:content>
+							</email:body>
+						</email:send>
+					</route>
+					<route>
+						<set-variable value="#[vars.rootMessage.payload.MOBILENUMBER[0]]" doc:name="mobileNumber" doc:id="41d8e4e3-b53d-434f-8da9-4264de0fe29a" variableName="mobileNumber" />
+							<scatter-gather doc:name="Scatter-Gather" doc:id="d6da6cf4-f56b-4062-a0c9-bd9a7d199db8" >
+								<route >
+									<logger level="INFO" doc:name="Before AWS SNS connector" doc:id="8e0fd229-1248-49ab-bfbb-342476649feb" message="=============Before AWS SNS connector=========="/>
+									<sns:publish doc:name="Publish mesg in to the Simple Notification Service" doc:id="609b1845-317e-4642-8c66-6467ddcd3cfa" config-ref="Amazon_SNS_configuration" phoneNumber='#["+91" ++ (vars.mobileNumber as String)]'>
+							<sns:message><![CDATA[#[%dw 2.0
+output text/plain
+
+var customer = vars.customer
+var offer = vars.loanOffer
+
+---
+"🏦 Dream Bank
+
+Dear " ++ (customer.FULLNAME default "N/A")++ ",
+
+Congratulations!
+
+Your Pre-Approved " ++ (offer.loanType default "N/A") ++ " is ready.
+
+Loan Amount : ₹" ++ (offer.offerAmount as String) ++ "
+
+Interest : " ++ (offer.interestRate as String) ++ "%
+
+Tenure : " ++ (offer.tenure as String) ++ " Months
+
+Account : XXXXXX" ++ customer.ACCOUNTNUMBER[-4 to -1] ++ "
+
+Visit:
+Dream Bank
+Thank you,
+Dream Bank"]]]></sns:message>
+						</sns:publish>
+									<logger level="INFO" doc:name="SNS Response" doc:id="6b1e8152-3aa4-4e64-ac45-21c94572212b" message="#[payload]" />
+								</route>
+								<route >
+									<logger level="INFO" doc:name="Before Ultramsg service" doc:id="71d41bfc-92f1-40e0-ad9e-3fc5560b6bce" message="===========Before Ultramsg service===========" />
+									<http:request method="${http.requester.method}" doc:name="Request send to whatsapp assistant" doc:id="a6683d87-5f85-47be-a39c-d54dd9e095f1" config-ref="HTTP_Request_configuration" path="${http.requester.path}">
+								<http:body><![CDATA[#[%dw 2.0
+output application/x-www-form-urlencoded
+
+var customer = vars.customer
+var offer = vars.loanOffer
+
+---
+{
+    token: p("ultramsg.token"),
+    to: "91" ++ (vars.mobileNumber as String),
+    body:
+"🏦 *Dream Bank*\n\n" ++
+"Hello *" ++ (customer.FULLNAME default "Customer") ++ "*, 👋\n\n" ++
+"🎉 *Great News!* You've received a *Pre-Approved " ++ (offer.loanType default "Loan") ++ "*.\n\n" ++
+"💰 *Loan Amount:* ₹" ++ (offer.offerAmount as String) ++ "\n" ++
+"📈 *Interest Rate:* " ++ (offer.interestRate as String) ++ "% p.a.\n" ++
+"📅 *Tenure:* " ++ (offer.tenure as String) ++ " Months\n" ++
+"💳 *Account:* XXXXXX" ++ customer.ACCOUNTNUMBER[-4 to -1] ++ "\n\n" ++
+"✅ No lengthy paperwork.\n" ++
+"✅ Fast approval.\n" ++
+"✅ Offer valid for a limited period.\n\n" ++
+"📲 Visit Dream Bank or contact our support team to claim your offer.\n\n" ++
+"Thank you for choosing *Dream Bank*. 💙"
+}]]]></http:body>
+								<http:query-params><![CDATA[#[output application/json
+---
+{
+	token : "s4gyjlv0audzesjd"
+}]]]></http:query-params>
+							</http:request>
+									<logger level="INFO" doc:name="UltraMsg Response" doc:id="3dc93f5c-fe91-4c59-a8f9-99f89fb6af94" message="#[write(payload,'application/json')]" />
+								</route>
+							</scatter-gather>
+					</route>
+				</scatter-gather>
+				<ee:transform doc:name="email mapping" doc:id="20b7f8ce-5470-4e17-9205-6a7c858c8f89">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/java
 ---
 {
@@ -150,10 +237,10 @@ output application/java
   email: vars.customer.EMAIL,
   subject: "Loan Offer"
 }]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-					<snowflake:insert doc:name="Insert" doc:id="c052386f-0afe-4fe4-8467-fc3170532a05" config-ref="Snowflake_Config">
-				<snowflake:sql><![CDATA[INSERT INTO EMAIL_HISTORY
+					</ee:message>
+				</ee:transform>
+				<snowflake:insert doc:name="Insert email audit log into the database" doc:id="ac9ea3f4-fc3a-4db2-8c39-cf87cc64d809" config-ref="Snowflake_Config">
+					<snowflake:sql><![CDATA[INSERT INTO EMAIL_HISTORY
 VALUES
 (
 :emailId,
@@ -163,14 +250,70 @@ VALUES
 'SENT',
 CURRENT_TIMESTAMP()
 );]]></snowflake:sql>
-						<snowflake:input-parameters ><![CDATA[#[payload]]]></snowflake:input-parameters>
-			</snowflake:insert>
-					<logger level="INFO" doc:name="end flow" doc:id="7ef565e0-d83b-414f-aa41-193965c28ee4" message="#[payload]"/>
-				</when>
-				<otherwise >
-					<logger level="INFO" doc:name="Offer already exists" doc:id="25144fe6-5afa-4020-8de1-997cfa51fdd2" message='#["Offer already exists for " ++ (vars.customer.ACCOUNTNUMBER default "UNKNOWN")]'/>
-				</otherwise>
-			</choice>
+					<snowflake:input-parameters><![CDATA[#[payload]]]></snowflake:input-parameters>
+				</snowflake:insert>
+				<logger level="INFO" doc:name="End Flow" doc:id="3831924b-fb4f-4292-b1a1-6cd43d8a1734" message="===================End Offer created successfully flow========#[payload]" />
+			</when>
+			<otherwise>
+				<set-variable value="#[vars.customer.MOBILENUMBER as String]" doc:name="mobileNumber" doc:id="43142412-a96b-4078-8d68-1783be2c37c8" variableName="mobileNumber" />
+				<scatter-gather doc:name="Scatter-Gather" doc:id="1fb819d7-d431-4697-9fd3-f3d617da5936" >
+						<route >
+							<logger level="INFO" doc:name="Before AWS SNS connector" doc:id="0c52b9ff-aea0-47ee-8f57-90beef6b7390" message="=============Before AWS SNS connector==========" />
+							<sns:publish doc:name="Publish mesg in to the Simple Notification Service" doc:id="fc49898b-d84d-4618-8e90-811c31129b54" config-ref="Amazon_SNS_configuration" phoneNumber='#["+91" ++ (vars.mobileNumber as String)]'>
+					<sns:message><![CDATA[#[%dw 2.0
+output text/plain
+
+var customer = vars.customer
+
+---
+"🏦 Dream Bank
+
+Dear " ++ (customer.FULLNAME default "Customer") ++ ",
+
+You already have an active " ++ (vars.loanType default "Loan") ++ " offer.
+
+Please check your email or visit Dream Bank to view your existing offer.
+
+Account: XXXXXX" ++ customer.ACCOUNTNUMBER[-4 to -1] ++ "
+
+Thank you,
+Dream Bank"]]]></sns:message>
+				</sns:publish>
+							<logger level="INFO" doc:name="SNS Response" doc:id="34cd3330-8690-4d8b-9ef5-5f5142f2ce3e" message="#[payload]" />
+						</route>
+						<route >
+							<logger level="INFO" doc:name="Before Ultramsg service" doc:id="de4aaf52-94ce-4a85-99d9-a0038cbebf53" message="===========Before Ultramsg service===========" />
+							<http:request method="${http.requester.method}" doc:name="Request send to whatsapp assistant" doc:id="4aedab98-c09b-4be3-b41f-82c78bdabbe3" config-ref="HTTP_Request_configuration" path="${http.requester.path}">
+								<http:body><![CDATA[#[%dw 2.0
+output application/x-www-form-urlencoded
+
+var customer = vars.customer
+
+---
+{
+    token: p("ultramsg.token"),
+    to: "91" ++ (vars.mobileNumber as String),
+    body:
+"🏦 *Dream Bank*\n\n" ++
+"Hello *" ++ (customer.FULLNAME default "Customer") ++ "*, 👋\n\n" ++
+"ℹ️ Our records show that you already have an *active " ++ (vars.loanType default "Loan") ++ "* offer.\n\n" ++
+"💳 *Account:* XXXXXX" ++ customer.ACCOUNTNUMBER[-4 to -1] ++ "\n\n" ++
+"📧 Please check your registered email or log in to Dream Bank to view your loan details.\n\n" ++
+"If you need any assistance, our support team is always happy to help.\n\n" ++
+"Thank you for banking with *Dream Bank*. 💙"
+}]]]></http:body>
+								<http:query-params><![CDATA[#[output application/json
+---
+{
+	token : "s4gyjlv0audzesjd"
+}]]]></http:query-params>
+							</http:request>
+							<logger level="INFO" doc:name="UltraMsg Response" doc:id="b851c092-583a-4bcf-8117-63f69d003e73" message="#[write(payload,'application/json')]" />
+						</route>
+					</scatter-gather>
+				<logger level="INFO" doc:name="Offer already exists" doc:id="35667e43-831c-4e05-a093-546af8071d24" message="=============End Offer already exists Flow==========#[payload]" />
+			</otherwise>
+		</choice>
 		</foreach>
 	</flow>
 </mule>
