@@ -38,7 +38,7 @@ The scheduler retrieves active customer data from Snowflake, evaluates configura
 <img width="1800" height="210" alt="customer-data" src="https://github.com/user-attachments/assets/faf4d00f-706c-48c3-a320-ca1e184b4ca3" />
 
 ### 3. Loan Eligibility
-<img width="1752" height="157" alt="loan-eligibility" src="https://github.com/user-attachments/assets/9e4b38a3-4902-4c51-b9e7-a75c6d7fa9c0" />
+<img width="1752" height="157" alt="loan-eligibility" src="https://github.com/user-attachments/assets/9e4b38b3-f00d-4d00-bd5d-10859bbcd911" />
 
 ### 4. Loan Type / Offer Generation
 <img width="1746" height="215" alt="loan-offer-generation" src="https://github.com/user-attachments/assets/4cfca54e-aca3-4c37-9163-a83be05a4abe" />
