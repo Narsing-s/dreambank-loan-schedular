@@ -218,7 +218,7 @@ var offer = vars.loanOffer
 								<http:query-params><![CDATA[#[output application/json
 ---
 {
-	token : "s4gyjlv0audzesjd"
+	token : p("ultramsg.token")
 }]]]></http:query-params>
 							</http:request>
 									<logger level="INFO" doc:name="UltraMsg Response" doc:id="3dc93f5c-fe91-4c59-a8f9-99f89fb6af94" message="#[write(payload,'application/json')]" />
