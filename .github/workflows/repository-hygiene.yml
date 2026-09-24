@@ -1,0 +1,24 @@
+name: Repository Hygiene
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check for obvious secret markers
+        shell: bash
+        run: |
+          set -e
+          if grep -RInE '(password[[:space:]]*[:=][[:space:]]*[^<[:space:]]+|secret(key)?[[:space:]]*[:=][[:space:]]*[^<[:space:]]+|accessKey[[:space:]]*[:=][[:space:]]*[^<[:space:]]+|token[[:space:]]*[:=][[:space:]]*[^<[:space:]]+)' .             --exclude-dir=.git             --exclude='*.md'             --exclude='repository-hygiene.yml'; then
+            echo "Potential hard-coded secret detected. Review the matching file."
+            exit 1
+          fi
+          echo "No obvious secret markers detected."
