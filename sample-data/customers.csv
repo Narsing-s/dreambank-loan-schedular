@@ -1,0 +1,5 @@
+CUSTOMER_ID,FULLNAME,ACCOUNTNUMBER,EMAIL,MOBILENUMBER,BANKNAME,BALANCE,STATUS
+CUST-001,Demo Home Customer,DEMO0001,demo-home@example.invalid,9000000001,Dream Bank,500000,ACTIVE
+CUST-002,Demo Car Customer,DEMO0002,demo-car@example.invalid,9000000002,Dream Bank,200000,ACTIVE
+CUST-003,Demo Personal Customer,DEMO0003,demo-personal@example.invalid,9000000003,Dream Bank,199999,ACTIVE
+CUST-004,Inactive Customer,DEMO0004,demo-inactive@example.invalid,9000000004,Dream Bank,750000,INACTIVE
