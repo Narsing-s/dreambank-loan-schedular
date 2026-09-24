@@ -29,6 +29,44 @@ The scheduler retrieves active customer data from Snowflake, evaluates configura
 - 🌐 REST/API capability for viewing loan offers
 - 📱 Notification connector dependency for future/extended channels
 
+## 🖼️ Project Screenshots
+
+### 1. Scheduler / Main Flow
+<img width="2523" height="489" alt="dreambank-loan-scheduler" src="https://github.com/user-attachments/assets/25e61e73-89cd-45e9-b13b-8c2cc4338529" />
+
+### 2. Customer Data / Snowflake
+<img width="1800" height="210" alt="customer-data" src="https://github.com/user-attachments/assets/faf4d00f-706c-48c3-a320-ca1e184b4ca3" />
+
+### 3. Loan Eligibility
+<img width="1752" height="157" alt="loan-eligibility" src="https://github.com/user-attachments/assets/9e4b38a3-4902-4c51-b9e7-a75c6d7fa9c0" />
+
+### 4. Loan Type / Offer Generation
+<img width="1746" height="215" alt="loan-offer-generation" src="https://github.com/user-attachments/assets/4cfca54e-aca3-4c37-9163-a83be05a4abe" />
+
+### 5. Unique Loan Offer ID
+<img width="657" height="77" alt="loan-offer-id" src="https://github.com/user-attachments/assets/3b0e8571-016f-4fab-9dce-f4eb72203a4f" />
+
+### 6. Loan Offer Persistence
+<img width="1737" height="197" alt="loan-offers-table" src="https://github.com/user-attachments/assets/6f12d1db-fe0e-4913-9138-7a0b26a73360" />
+
+### 7. Duplicate Offer Prevention
+<img width="961" height="112" alt="duplicate-offer-prevention" src="https://github.com/user-attachments/assets/0e6262d1-9425-47e9-b0cb-81a2e17782f2" />
+
+### 8. HTML Email Notification
+<img width="1871" height="830" alt="email-notification" src="https://github.com/user-attachments/assets/6054d502-a005-46a8-b86f-34a47bce6963" />
+
+### 9. Email History
+<img width="1702" height="271" alt="email-history" src="https://github.com/user-attachments/assets/6c8daa3a-4902-4c51-b9e7-a75c6d7fa9c0" />
+
+### 10. WhatsApp Notification
+<img width="777" height="382" alt="whatsapp-notification" src="https://github.com/user-attachments/assets/5b18b18a-85ee-4b5a-9900-7f42b8664532" />
+
+### 11. SMS Notification
+<img width="716" height="1600" alt="sms-notification" src="https://github.com/user-attachments/assets/cf2bd231-8bea-4875-818e-10e72716d29f" />
+
+### 12. REST API — View Loan Offers
+<img width="1577" height="1003" alt="loan-offers-api" src="https://github.com/user-attachments/assets/b8d10670-c830-45b0-9f6d-e87928650fd0" />
+
 ## 🔄 End-to-end flow
 
 ```mermaid
